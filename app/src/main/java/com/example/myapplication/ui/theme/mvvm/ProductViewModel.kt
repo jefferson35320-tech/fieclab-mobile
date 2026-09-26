@@ -1,37 +1,65 @@
 package com.example.myapplication.ui.theme.mvvm
 
-// ProductViewModel.kt
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+data class Product(
+    val id: Long = 0,
+    val name: String,
+    val description: String,
+    val price: Double,
+    val chemicalFormula: String? = null
+)
 
 data class ProductUiState(
     val products: List<Product> = emptyList(),
-    val cartCount: Int = 0,
-    val isLoading: Boolean = false
+    val cartCount: Int = 0
 )
 
 class ProductViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(ProductUiState())
+
+    private val _uiState = MutableStateFlow(
+        ProductUiState(
+            products = listOf(
+                Product(
+                    id = 1,
+                    name = "Sabonete Artesanal de Glicerina",
+                    description = "Sabonete hidratante produzido com óleos essenciais e glicerina vegetal.",
+                    price = 12.50,
+                    chemicalFormula = "C3H8O3"
+                ),
+                Product(
+                    id = 2,
+                    name = "Álcool em Gel Antisséptico 70%",
+                    description = "Formulação antisséptica com aloe vera para proteção das mãos.",
+                    price = 8.90,
+                    chemicalFormula = "C2H6O"
+                ),
+                Product(
+                    id = 3,
+                    name = "Aromatizador de Ambientes Lavanda",
+                    description = "Spray aromatizante feito com extratos botânicos e solução alcoólica.",
+                    price = 22.00,
+                    chemicalFormula = "C10H18O"
+                ),
+                Product(
+                    id = 4,
+                    name = "Detergente Ecológico Biodegradável",
+                    description = "Detergente neutro de alta eficiência e baixo impacto ambiental.",
+                    price = 6.50,
+                    chemicalFormula = "C12H25SO4Na"
+                )
+            )
+        )
+    )
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
-    init {
-        loadProducts()
-    }
-
-    private fun loadProducts() {
-        // Exemplo de produtos artesanais do curso de química
-        val sampleProducts = listOf(
-            Product("1", "Sabonete Artesanal de Lavanda", "Produzido via saponificação a frio", 12.50, "C17H35COOK"),
-            Product("2", "Álcool em Gel 70% Aromático", "Formulação antiseptico com óleo essencial", 8.00, "C2H5OH"),
-            Product("3", "Vela Aromática de Baunilha", "Cera vegetal com óleos essenciais", 25.00)
-        )
-        _uiState.value = ProductUiState(products = sampleProducts)
-    }
-
     fun addToCart(product: Product) {
-        val currentCount = _uiState.value.cartCount
-        _uiState.value = _uiState.value.copy(cartCount = currentCount + 1)
+        _uiState.update { currentState ->
+            currentState.copy(cartCount = currentState.cartCount + 1)
+        }
     }
 }
