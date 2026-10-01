@@ -1,63 +1,89 @@
-package com.example.myapplication.ui.theme.mvvm
+package com.example.myapplication.mvvm
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
-data class Product(
-    val id: Long = 0,
-    val name: String,
-    val description: String,
-    val price: Double,
-    val chemicalFormula: String? = null
-)
+import kotlinx.coroutines.launch
 
 data class ProductUiState(
-    val products: List<Product> = emptyList(),
-    val cartCount: Int = 0
+    val products: List<Products> = emptyList(),
+    val cartCount: Int = 0,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
 )
 
-class ProductViewModel : ViewModel() {
+class ProductViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(
-        ProductUiState(
-            products = listOf(
-                Product(
-                    id = 1,
-                    name = "Sabonete Artesanal de Glicerina",
-                    description = "Sabonete hidratante produzido com óleos essenciais e glicerina vegetal.",
-                    price = 12.50,
-                    chemicalFormula = "C3H8O3"
-                ),
-                Product(
-                    id = 2,
-                    name = "Álcool em Gel Antisséptico 70%",
-                    description = "Formulação antisséptica com aloe vera para proteção das mãos.",
-                    price = 8.90,
-                    chemicalFormula = "C2H6O"
-                ),
-                Product(
-                    id = 3,
-                    name = "Aromatizador de Ambientes Lavanda",
-                    description = "Spray aromatizante feito com extratos botânicos e solução alcoólica.",
-                    price = 22.00,
-                    chemicalFormula = "C10H18O"
-                ),
-                Product(
-                    id = 4,
-                    name = "Detergente Ecológico Biodegradável",
-                    description = "Detergente neutro de alta eficiência e baixo impacto ambiental.",
-                    price = 6.50,
-                    chemicalFormula = "C12H25SO4Na"
-                )
-            )
-        )
-    )
+    private val repository: ProductRepository
+    val authRepository: AuthRepository = AuthRepository()
+
+    private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
-    fun addToCart(product: Product) {
+    init {
+        val database = ProductDatabase.getDatabase(application)
+        repository = ProductRepository(database.productDao())
+
+        viewModelScope.launch {
+            repository.allItems.collect { itemList ->
+                if (itemList.isEmpty()) {
+                    seedDefaultProducts()
+                } else {
+                    _uiState.update { currentState ->
+                        currentState.copy(products = itemList)
+                    }
+                }
+            }
+        }
+
+        syncWithBackend()
+    }
+
+    fun syncWithBackend() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.syncProductsFromBackend()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isLoading = false,
+                    errorMessage = result.exceptionOrNull()?.localizedMessage
+                )
+            }
+        }
+    }
+
+    private suspend fun seedDefaultProducts() {
+        val defaultProducts = listOf(
+            Products(
+                name = "Sabonete Artesanal de Glicerina",
+                description = "Sabonete hidratante produzido com óleos essenciais e glicerina vegetal.",
+                price = 12.50,
+                chemicalFormula = "CABELO"
+            ),
+            Products(
+                name = "Álcool em Gel Antisséptico 70%",
+                description = "Formulação antisséptica com aloe vera para proteção das mãos.",
+                price = 8.90,
+                chemicalFormula = "PELE"
+            ),
+            Products(
+                name = "Aromatizador de Ambientes Lavanda",
+                description = "Spray aromatizante feito com extratos botânicos e solução alcoólica.",
+                price = 22.00,
+                chemicalFormula = "PERFUME"
+            )
+        )
+        for (product in defaultProducts) {
+            repository.insert(product)
+        }
+    }
+
+    fun addToCart(product: Products) {
         _uiState.update { currentState ->
             currentState.copy(cartCount = currentState.cartCount + 1)
         }

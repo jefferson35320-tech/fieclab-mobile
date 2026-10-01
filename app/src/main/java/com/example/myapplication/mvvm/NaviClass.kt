@@ -1,3 +1,3 @@
-package com.example.myapplication.ui.theme.mvvm
+package com.example.myapplication.mvvm
 
 // A navegação principal do aplicativo está definida em MainActivity.kt

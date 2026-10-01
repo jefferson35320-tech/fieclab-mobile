@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.theme.mvvm
+package com.example.myapplication.mvvm
 
 import android.content.Context
 import androidx.room.Database
@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 @Database(entities = [Products::class], version = 1, exportSchema = false)
 abstract class ProductDatabase : RoomDatabase() {
 
-    abstract fun itemDao(): ItemDao
+    abstract fun productDao(): ProductDao
 
     companion object {
         @Volatile

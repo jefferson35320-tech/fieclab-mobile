@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.theme.mvvm
+package com.example.myapplication.mvvm
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -71,7 +71,7 @@ fun ShopScreen(viewModel: ProductViewModel = viewModel()) {
 }
 
 @Composable
-fun StyledProductCard(product: Product, onAddToCart: () -> Unit) {
+fun StyledProductCard(product: Products, onAddToCart: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -90,7 +90,6 @@ fun StyledProductCard(product: Product, onAddToCart: () -> Unit) {
                     modifier = Modifier.weight(1f)
                 )
 
-                // Chip para a Fórmula Química
                 product.chemicalFormula?.let { formula ->
                     Surface(
                         color = ChemTeal.copy(alpha = 0.1f),

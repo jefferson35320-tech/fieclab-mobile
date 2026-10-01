@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.theme.mvvm
+package com.example.myapplication.mvvm
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -9,7 +9,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ItemDao {
+interface ProductDao {
 
     @Query("SELECT * FROM items ORDER BY timestamp DESC")
     fun getAllItems(): Flow<List<Products>>

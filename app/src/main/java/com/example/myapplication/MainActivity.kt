@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.mvvm.LoginScreen
+import com.example.myapplication.mvvm.ShopScreen
 import com.example.myapplication.ui.theme.QuimicaStoreTheme
-import com.example.myapplication.ui.theme.mvvm.LoginScreen
-import com.example.myapplication.ui.theme.mvvm.ShopScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +43,6 @@ fun AppNavigation() {
         composable("login") {
             LoginScreen {
                 navController.navigate("shop") {
-                    // Remove a tela de login da pilha para o usuário não voltar a ela apertando "voltar"
                     popUpTo("login") { inclusive = true }
                 }
             }
