@@ -24,7 +24,10 @@ import com.example.myapplication.ui.theme.ChemTeal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShopScreen(viewModel: ProductViewModel = viewModel()) {
+fun ShopScreen(
+    viewModel: ProductViewModel = viewModel(),
+    onCartClick: () -> Unit = {}
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -35,21 +38,22 @@ fun ShopScreen(viewModel: ProductViewModel = viewModel()) {
                 },
                 colors = topAppBarColors(containerColor = ChemTeal),
                 actions = {
-                    BadgedBox(
-                        badge = {
-                            if (uiState.cartCount > 0) {
-                                Badge(containerColor = MaterialTheme.colorScheme.secondary) {
-                                    Text("${uiState.cartCount}")
+                    IconButton(onClick = onCartClick) {
+                        BadgedBox(
+                            badge = {
+                                if (uiState.cartCount > 0) {
+                                    Badge(containerColor = MaterialTheme.colorScheme.secondary) {
+                                        Text("${uiState.cartCount}")
+                                    }
                                 }
                             }
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = "Carrinho",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = "Carrinho de Compras",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
             )
@@ -63,7 +67,7 @@ fun ShopScreen(viewModel: ProductViewModel = viewModel()) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(uiState.products) { product ->
+            items(uiState.products, key = { "${it.id}_${it.name}" }) { product ->
                 StyledProductCard(product = product, onAddToCart = { viewModel.addToCart(product) })
             }
         }

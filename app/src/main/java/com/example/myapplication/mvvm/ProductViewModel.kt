@@ -10,12 +10,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class CartItem(
+    val product: Products,
+    val quantity: Int = 1
+)
+
 data class ProductUiState(
     val products: List<Products> = emptyList(),
-    val cartCount: Int = 0,
+    val cartItems: List<CartItem> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null
-)
+) {
+    val cartCount: Int get() = cartItems.sumOf { it.quantity }
+    val cartTotalPrice: Double get() = cartItems.sumOf { it.product.price * it.quantity }
+}
 
 class ProductViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -85,7 +93,48 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
 
     fun addToCart(product: Products) {
         _uiState.update { currentState ->
-            currentState.copy(cartCount = currentState.cartCount + 1)
+            val existingItemIndex = currentState.cartItems.indexOfFirst { it.product.id == product.id }
+            val updatedList = currentState.cartItems.toMutableList()
+
+            if (existingItemIndex != -1) {
+                val currentItem = updatedList[existingItemIndex]
+                updatedList[existingItemIndex] = currentItem.copy(quantity = currentItem.quantity + 1)
+            } else {
+                updatedList.add(CartItem(product = product, quantity = 1))
+            }
+
+            currentState.copy(cartItems = updatedList)
+        }
+    }
+
+    fun removeFromCart(product: Products) {
+        _uiState.update { currentState ->
+            val existingItemIndex = currentState.cartItems.indexOfFirst { it.product.id == product.id }
+            if (existingItemIndex == -1) return@update currentState
+
+            val updatedList = currentState.cartItems.toMutableList()
+            val currentItem = updatedList[existingItemIndex]
+
+            if (currentItem.quantity > 1) {
+                updatedList[existingItemIndex] = currentItem.copy(quantity = currentItem.quantity - 1)
+            } else {
+                updatedList.removeAt(existingItemIndex)
+            }
+
+            currentState.copy(cartItems = updatedList)
+        }
+    }
+
+    fun deleteFromCart(product: Products) {
+        _uiState.update { currentState ->
+            val updatedList = currentState.cartItems.filterNot { it.product.id == product.id }
+            currentState.copy(cartItems = updatedList)
+        }
+    }
+
+    fun clearCart() {
+        _uiState.update { currentState ->
+            currentState.copy(cartItems = emptyList())
         }
     }
 }

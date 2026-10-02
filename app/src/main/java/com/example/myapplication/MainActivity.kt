@@ -8,10 +8,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.mvvm.CartScreen
 import com.example.myapplication.mvvm.LoginScreen
+import com.example.myapplication.mvvm.ProductViewModel
 import com.example.myapplication.mvvm.ShopScreen
 import com.example.myapplication.ui.theme.QuimicaStoreTheme
 
@@ -35,6 +38,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val productViewModel: ProductViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -48,7 +52,16 @@ fun AppNavigation() {
             }
         }
         composable("shop") {
-            ShopScreen()
+            ShopScreen(
+                viewModel = productViewModel,
+                onCartClick = { navController.navigate("cart") },
+            )
+        }
+        composable("cart") {
+            CartScreen(
+                viewModel = productViewModel,
+                onBackClick = { navController.popBackStack() },
+            )
         }
     }
 }

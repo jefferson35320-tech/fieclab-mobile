@@ -17,6 +17,9 @@ interface ProductDao {
     @Query("SELECT * FROM items WHERE id = :id")
     suspend fun getItemById(id: Long): Products?
 
+    @Query("SELECT * FROM items WHERE name = :name LIMIT 1")
+    suspend fun getItemByName(name: String): Products?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(item: Products): Long
 

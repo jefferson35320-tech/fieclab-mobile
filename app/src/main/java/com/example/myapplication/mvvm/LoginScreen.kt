@@ -42,6 +42,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showOfflineFallback by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -58,6 +59,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         coroutineScope.launch {
             isLoading = true
             errorMessage = null
+            showOfflineFallback = false
+
             val result = authRepository.login(email, password)
 
             result.onSuccess {
@@ -65,7 +68,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 onLoginSuccess()
             }.onFailure { exception ->
                 Log.e("LoginScreen", "Erro no login backend", exception)
-                errorMessage = "Erro ao conectar com servidor: ${exception.localizedMessage}"
+                errorMessage = "Servidor indisponível ou credenciais inválidas."
+                showOfflineFallback = true
             }
             isLoading = false
         }
@@ -227,6 +231,20 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         )
                     } else {
                         Text("ENTRAR", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                if (showOfflineFallback) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    TextButton(
+                        onClick = onLoginSuccess,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Entrar em modo demonstração",
+                            color = ChemDarkTeal,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
 

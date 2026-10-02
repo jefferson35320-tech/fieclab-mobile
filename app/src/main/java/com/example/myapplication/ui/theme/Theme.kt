@@ -10,13 +10,17 @@ private val LightColorScheme = lightColorScheme(
     secondary = ChemAccent,
     background = BackgroundLight,
     surface = CardBackground,
-    onPrimary = Color.White
+    onPrimary = Color.White,
+    onSecondary = Color.White,      // Recomendado
+    onBackground = Color(0xFF1C1B1F), // Recomendado (texto escuro para fundo claro)
+    onSurface = Color(0xFF1C1B1F)     // Recomendado (texto escuro para cards)
 )
 
 @Composable
 fun QuimicaStoreTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = LightColorScheme,
+        typography = Typography, // Opcional: caso tenha o Typography.kt configurado
         content = content
     )
 }

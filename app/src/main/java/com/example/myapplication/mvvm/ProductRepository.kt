@@ -2,7 +2,6 @@ package com.example.myapplication.mvvm
 
 import com.example.myapplication.data.remote.FiecLabApi
 import com.example.myapplication.data.remote.RetrofitClient
-import com.example.myapplication.data.remote.dto.ProductDto
 import kotlinx.coroutines.flow.Flow
 
 class ProductRepository(
@@ -18,8 +17,15 @@ class ProductRepository(
             if (response.isSuccessful && response.body() != null) {
                 val remoteList = response.body()?.content ?: emptyList()
                 if (remoteList.isNotEmpty()) {
-                    val localEntities = remoteList.map { dto -> dto.toEntity() }
-                    for (entity in localEntities) {
+                    for (dto in remoteList) {
+                        val existing = productDao.getItemByName(dto.name)
+                        val entity = Products(
+                            id = existing?.id ?: 0,
+                            name = dto.name,
+                            description = dto.description ?: "Produto artesanal do laboratório FIEC",
+                            price = dto.price ?: 0.0,
+                            chemicalFormula = dto.type ?: "Fórmula FIEC",
+                        )
                         productDao.insertItem(entity)
                     }
                 }
@@ -46,14 +52,5 @@ class ProductRepository(
 
     suspend fun delete(item: Products) {
         productDao.deleteItem(item)
-    }
-
-    private fun ProductDto.toEntity(): Products {
-        return Products(
-            name = this.name,
-            description = this.description ?: "Produto artesanal do laboratório FIEC",
-            price = this.price,
-            chemicalFormula = this.type ?: "Fórmula FIEC",
-        )
     }
 }
